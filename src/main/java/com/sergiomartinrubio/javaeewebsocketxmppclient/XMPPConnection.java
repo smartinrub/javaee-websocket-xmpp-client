@@ -21,12 +21,12 @@ public class XMPPConnection {
     private int port;
 
     /**
-     * The name of the connection.
+     * The XMPP domain is what follows after the '@' sign in XMPP addresses (JIDs).
      */
     private String domain;
 
     /**
-     * The username.
+     * The username is usually the localpart of the clients JID.
      */
     private String username;
 
