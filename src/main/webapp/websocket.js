@@ -41,10 +41,8 @@ function onMessageReceive(event) {
     let messageElement = document.createElement('li');
 
     if (message.type === 'JOIN') {
-        messageElement.classList.add('event-message');
         message.content = message.sender + ' joined!';
     } else {
-        messageElement.classList.add('chat-message');
         let usernameElement = document.createElement('span');
         let usernameText = document.createTextNode(message.sender);
         usernameElement.appendChild(usernameText);
