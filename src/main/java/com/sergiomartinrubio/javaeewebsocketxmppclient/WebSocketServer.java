@@ -1,5 +1,7 @@
 package com.sergiomartinrubio.javaeewebsocketxmppclient;
 
+import com.sergiomartinrubio.javaeewebsocketxmppclient.domain.TextMessage;
+import com.sergiomartinrubio.javaeewebsocketxmppclient.exception.WebSocketException;
 import lombok.extern.slf4j.Slf4j;
 import org.jivesoftware.smack.AbstractXMPPConnection;
 import org.jivesoftware.smack.SmackException;
@@ -15,33 +17,38 @@ import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
+
+import static com.sergiomartinrubio.javaeewebsocketxmppclient.domain.MessageType.*;
 
 @Slf4j
 @ApplicationScoped
 @ServerEndpoint(value = "/chat/{jid}", decoders = MessageDecoder.class, encoders = MessageEncoder.class)
 public class WebSocketServer {
 
-    private Map<String, String> connections;
+    private Map<String, Session> connections = new HashMap<>();
     private XMPPClient xmppClient = new XMPPClient();
     private AbstractXMPPConnection connection;
 
     @OnOpen
-    public void open(Session session, @PathParam("jid") String jid) throws IOException, InterruptedException, XMPPException, SmackException {
-        // TODO: Get session and Websocket connection
-//        connections.put(session.getId(), jid);
-//        Message message = new Message();
-//        message.setTo(jid);
-//        message.setBody("Connected!");
+    public void open(Session session, @PathParam("jid") String jid) throws IOException, InterruptedException,
+            XMPPException, SmackException, EncodeException {
+        connections.put(jid, session);
         connection = xmppClient.connect("user1@localhost");
         connection.connect().login();
         log.info("Connected!");
-        session.getBasicRemote().sendText("Connected!");
+        TextMessage textMessage = TextMessage.builder()
+                .from("")
+                .to(jid)
+                .messageType(JOIN)
+                .build();
+        session.getBasicRemote().sendObject(textMessage);
     }
 
     @OnMessage
-    public void handleMessage(TextMessage message, Session session) throws XmppStringprepException, SmackException.NotConnectedException, InterruptedException {
-        // TODO: Handle new message
+    public void handleMessage(TextMessage message, Session session) throws XmppStringprepException,
+            SmackException.NotConnectedException, InterruptedException {
         log.info(message.toString());
         String toJid = message.getTo();
         EntityBareJid entityBareJid = JidCreate.entityBareFrom(toJid);
@@ -49,39 +56,28 @@ public class WebSocketServer {
         ChatManager chatManager = ChatManager.getInstanceFor(connection);
 
         chatManager.addIncomingListener((from, messageFrom, chat) -> {
-            System.out.println("New message from " + from + ": " + messageFrom.getBody());
+            log.info("New message from " + from + ": " + messageFrom.getBody());
+            try {
+                TextMessage textMessage = TextMessage.builder()
+                        .from(from.getLocalpart().toString())
+                        // TODO: handle null
+                        .to(messageFrom.getTo().getLocalpartOrNull().toString())
+                        .messageType(CHAT)
+                        .build();
+                session.getBasicRemote().sendObject(textMessage);
+            } catch (IOException | EncodeException e) {
+                e.printStackTrace();
+            }
         });
 
         Chat chat = chatManager.chatWith(entityBareJid);
         chat.send(message.getContent());
-//        try (JsonReader reader = Json.createReader(new StringReader(message))) {
-//            JsonObject jsonMessage = reader.readObject();
-//
-//            if ("add".equals(jsonMessage.getString("action"))) {
-//                Device device = new Device();
-//                device.setName(jsonMessage.getString("name"));
-//                device.setDescription(jsonMessage.getString("description"));
-//                device.setType(jsonMessage.getString("type"));
-//                device.setStatus("Off");
-//                sessionHandler.addDevice(device);
-//            }
-//
-//            if ("remove".equals(jsonMessage.getString("action"))) {
-//                int id = (int) jsonMessage.getInt("id");
-//                sessionHandler.removeDevice(id);
-//            }
-//
-//            if ("toggle".equals(jsonMessage.getString("action"))) {
-//                int id = (int) jsonMessage.getInt("id");
-//                sessionHandler.toggleDevice(id);
-//            }
-//        }
     }
 
     @OnClose
     public void close(Session session) {
         log.info("Connection closed!");
-        // TODO: Websocket connection closes
+        connection.disconnect();
 //        sessionHandler.removeSession(session);
     }
 

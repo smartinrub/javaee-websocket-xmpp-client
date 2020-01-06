@@ -4,22 +4,57 @@
     <title>Java WebSocket Chat</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <script src="websocket.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+            integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+            integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+            crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+            integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+            crossorigin="anonymous"></script>
 </head>
 <body>
 
+<div id="username-page">
+    <div class="username-page-container">
+        <h1 class="title">Type your username</h1>
+        <form id="usernameForm" name="usernameForm">
+            <div class="form-group">
+                <input type="text" id="name" placeholder="Username" autocomplete="off" class="form-control"/>
+            </div>
+            <div class="form-group">
+                <input type="button" class="button" value="Connect" onclick=connect()>
+            </div>
+        </form>
+    </div>
+</div>
+
 <div>
-    <h1>Java Websocket Chat</h1>
-    <form id="connectForm">
-        <label for="name">Name</label>
-        <input type="text" name="name" id="name">
-        <input type="button" class="button" value="Connect" onclick=formSubmit()>
-    </form>
-    <br>
-    <form id="messageForm">
-        <label for="content">Message</label>
-        <textarea name="content" id="content" rows="2" cols="50"></textarea>
-        <input type="button" class="button" value="Send" onclick=sendMessage()>
-    </form>
+    <div id="chat-page" hidden>
+        <div class="chat-container">
+            <div class="chat-header">
+                <h2>Java Websocket Chat Demo</h2>
+            </div>
+            <div class="connecting">
+                Connecting...
+            </div>
+            <ul id="messageArea">
+
+            </ul>
+            <form id="messageForm" name="messageForm">
+                <div class="form-group">
+                    <div class="input-group clearfix">
+                        <input type="text" id="message" placeholder="Type a message..." autocomplete="off"
+                               class="form-control"/>
+                        <button type="submit" class="primary" onclick="sendMessage()">Send</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
 
 </div>
 
