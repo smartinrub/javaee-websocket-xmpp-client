@@ -17,68 +17,56 @@ import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
-import static com.sergiomartinrubio.javaeewebsocketxmppclient.domain.MessageType.*;
+import static com.sergiomartinrubio.javaeewebsocketxmppclient.domain.MessageType.JOIN;
 
 @Slf4j
 @ApplicationScoped
-@ServerEndpoint(value = "/chat/{jid}", decoders = MessageDecoder.class, encoders = MessageEncoder.class)
+@ServerEndpoint(value = "/chat/{username}", decoders = MessageDecoder.class, encoders = MessageEncoder.class)
 public class WebSocketServer {
 
-    private Map<String, Session> connections = new HashMap<>();
     private XMPPClient xmppClient = new XMPPClient();
     private AbstractXMPPConnection connection;
+    private ChatManager chatManager;
 
     @OnOpen
-    public void open(Session session, @PathParam("jid") String jid) throws IOException, InterruptedException,
-            XMPPException, SmackException, EncodeException {
-        connections.put(jid, session);
-        connection = xmppClient.connect("user1@localhost");
-        connection.connect().login();
-        log.info("Connected!");
+    public void open(Session session, @PathParam("username") String username) {
+        connection = xmppClient.connect(username + "@" + XMPPClient.XMPP_HOST);
+        try {
+            connection.connect().login();
+        } catch (XMPPException | SmackException | IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
         TextMessage textMessage = TextMessage.builder()
-                .from("")
-                .to(jid)
+                .to(username)
                 .messageType(JOIN)
                 .build();
-        session.getBasicRemote().sendObject(textMessage);
+        try {
+            session.getBasicRemote().sendObject(textMessage);
+            chatManager = ChatManager.getInstanceFor(connection);
+            chatManager.addIncomingListener(new XMPPIncomingChatMessageListener(session));
+        } catch (IOException | EncodeException e) {
+            e.printStackTrace();
+        }
+        log.info("Connected!");
     }
 
     @OnMessage
-    public void handleMessage(TextMessage message, Session session) throws XmppStringprepException,
-            SmackException.NotConnectedException, InterruptedException {
-        log.info(message.toString());
-        String toJid = message.getTo();
-        EntityBareJid entityBareJid = JidCreate.entityBareFrom(toJid);
-
-        ChatManager chatManager = ChatManager.getInstanceFor(connection);
-
-        chatManager.addIncomingListener((from, messageFrom, chat) -> {
-            log.info("New message from " + from + ": " + messageFrom.getBody());
-            try {
-                TextMessage textMessage = TextMessage.builder()
-                        .from(from.getLocalpart().toString())
-                        // TODO: handle null
-                        .to(messageFrom.getTo().getLocalpartOrNull().toString())
-                        .messageType(CHAT)
-                        .build();
-                session.getBasicRemote().sendObject(textMessage);
-            } catch (IOException | EncodeException e) {
-                e.printStackTrace();
-            }
-        });
-
-        Chat chat = chatManager.chatWith(entityBareJid);
-        chat.send(message.getContent());
+    public void handleMessage(TextMessage message, Session session) {
+        EntityBareJid entityBareJid;
+        try {
+            entityBareJid = JidCreate.entityBareFrom(message.getTo());
+            Chat chat = chatManager.chatWith(entityBareJid);
+            chat.send(message.getContent());
+        } catch (XmppStringprepException | SmackException.NotConnectedException | InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @OnClose
     public void close(Session session) {
-        log.info("Connection closed!");
         connection.disconnect();
-//        sessionHandler.removeSession(session);
+        log.info("Connection closed!");
     }
 
     @OnError

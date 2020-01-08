@@ -1,9 +1,10 @@
 let socket = null;
-let username = null;
+var username = null;
+var selectedContact = null
 
 function connect() {
-    var username = document.getElementById("name").value;
-    $("#username-page").hide();
+    username = document.getElementById("username").value;
+    $("#login-component").hide();
     $("#chat-page").attr("hidden", false);
     socket = new WebSocket("ws://localhost:8080/javaee-websocket-xmpp-client/chat/" + username);
     socket.onmessage = onMessageReceive;
@@ -12,50 +13,52 @@ function connect() {
 }
 
 function onConnected() {
-    $(".connecting").hide();
+    $("#connectSpinner").hide();
 }
 
 function onError(error) {
-    let connectingElement = $.find("connecting");
+    let connectingElement = $("#connectSpinner");
     connectingElement.textContent = 'Could not connect to WebSocket server. Please refresh this page to try again!';
     connectingElement.style.color = 'red';
 }
 
-function sendMessage(event) {
-    let messageInput = $("message");
-    let messageContent = messageInput.value.trim();
+function selectContact(contact) {
+    selectedContact = contact;
+}
+
+function sendMessage() {
+    var messageInput = document.getElementById("message");
+    var messageContent = messageInput.value.trim();
     if (messageContent && socket) {
         let chatMessage = {
             from: username,
-            to: "sergio@localhost",
+            to: selectedContact + "@localhost",
             content: messageInput.value
         };
+        console.log(chatMessage);
         socket.send(JSON.stringify(chatMessage));
-        messageInput.value = '';
+        messageInput.value = "";
     }
-    event.preventDefault();
 }
 
 function onMessageReceive(event) {
     let message = JSON.parse(event.data);
+    console.log(message);
     let messageElement = document.createElement('li');
 
-    if (message.type === 'JOIN') {
-        message.content = message.sender + ' joined!';
+    if (message.messageType === 'JOIN') {
+        message.content = message.to + ' joined!';
     } else {
         let usernameElement = document.createElement('span');
-        let usernameText = document.createTextNode(message.sender);
+        let usernameText = document.createTextNode(message.from);
         usernameElement.appendChild(usernameText);
         messageElement.appendChild(usernameElement);
     }
 
-    let textElement = document.createElement('p');
-    let messageText = document.createTextNode(message.content);
+    var textElement = document.createElement('p');
+    var messageText = document.createTextNode(message.content);
     textElement.appendChild(messageText);
-
     messageElement.appendChild(textElement);
-
-    let messageArea = $("messageArea");
-    messageArea.append(messageElement);
-    messageArea.scrollTop = messageArea.scrollHeight;
+    let messageArea = document.getElementById("messageArea");
+    messageArea.appendChild(messageElement);
 }
