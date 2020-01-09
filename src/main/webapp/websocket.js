@@ -1,25 +1,29 @@
 let socket = null;
 var username = null;
-var selectedContact = null
+var selectedContact = null;
 
 function connect() {
     username = document.getElementById("username").value;
-    $("#login-component").hide();
-    $("#chat-page").attr("hidden", false);
-    socket = new WebSocket("ws://localhost:8080/javaee-websocket-xmpp-client/chat/" + username);
-    socket.onmessage = onMessageReceive;
-    socket.onopen = onConnected;
-    socket.onerror = onError;
+    $("#login-component").attr("hidden", true);
+    if (socket === null || socket.readyState === WebSocket.CLOSED) {
+        socket = new WebSocket("ws://localhost:8080/javaee-websocket-xmpp-client/chat/" + username);
+        socket.onmessage = onMessageReceive;
+        socket.onopen = onConnected;
+        socket.onerror = onError;
+    }
 }
 
-function onConnected() {
+function onConnected(event) {
+    console.log(event);
+    console.log("Connected!");
     $("#connectSpinner").hide();
+    $("#messageArea").attr("hidden", false);
 }
 
 function onError(error) {
-    let connectingElement = $("#connectSpinner");
-    connectingElement.textContent = 'Could not connect to WebSocket server. Please refresh this page to try again!';
-    connectingElement.style.color = 'red';
+    console.log(error);
+    $("#chatContainer").hide();
+    $("#login-component").attr("hidden", false);
 }
 
 function selectContact(contact) {
@@ -47,8 +51,13 @@ function onMessageReceive(event) {
     let messageElement = document.createElement('li');
 
     if (message.messageType === 'JOIN') {
+        $("#chatContainer").attr("hidden", false);
         message.content = message.to + ' joined!';
-    } else {
+    } else if (message.messageType === 'ERROR') {
+        $("#chatContainer").hide();
+        $("#login-component").attr("hidden", false);
+    }
+    else {
         let usernameElement = document.createElement('span');
         let usernameText = document.createTextNode(message.from);
         usernameElement.appendChild(usernameText);
