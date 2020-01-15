@@ -5,7 +5,9 @@ var selectedContact = null;
 function connect() {
     username = document.getElementById("username").value;
     $("#login-component").attr("hidden", true);
-    if (socket === null || socket.readyState === WebSocket.CLOSED) {
+    if (socket === null) {
+        console.log("Logging in...");
+        $("#chat-container").attr("hidden", false);
         socket = new WebSocket("ws://localhost:8080/javaee-websocket-xmpp-client/chat/" + username);
         socket.onmessage = onMessageReceive;
         socket.onopen = onConnected;
@@ -15,9 +17,7 @@ function connect() {
 
 function onConnected(event) {
     console.log(event);
-    console.log("Connected!");
     $("#connectSpinner").hide();
-    $("#messageArea").attr("hidden", false);
 }
 
 function onError(error) {
@@ -51,23 +51,25 @@ function onMessageReceive(event) {
     let messageElement = document.createElement('li');
 
     if (message.messageType === 'JOIN') {
-        $("#chatContainer").attr("hidden", false);
-        message.content = message.to + ' joined!';
+        $("#chat-container").attr("hidden", false);
+        $("#messageArea").attr("hidden", false);
+        console.log(message.to + ' joined!');
     } else if (message.messageType === 'ERROR') {
-        $("#chatContainer").hide();
+        $("#chat-container").attr("hidden", true);
         $("#login-component").attr("hidden", false);
-    }
-    else {
+        username = null;
+        socket = null;
+    } else {
         let usernameElement = document.createElement('span');
         let usernameText = document.createTextNode(message.from);
         usernameElement.appendChild(usernameText);
         messageElement.appendChild(usernameElement);
     }
 
-    var textElement = document.createElement('p');
-    var messageText = document.createTextNode(message.content);
-    textElement.appendChild(messageText);
-    messageElement.appendChild(textElement);
-    let messageArea = document.getElementById("messageArea");
-    messageArea.appendChild(messageElement);
+    // var textElement = document.createElement('p');
+    // var messageText = document.createTextNode(message.content);
+    // textElement.appendChild(messageText);
+    // messageElement.appendChild(textElement);
+    // let messageArea = document.getElementById("messageArea");
+    // messageArea.appendChild(messageElement);
 }
