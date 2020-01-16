@@ -22,7 +22,7 @@ function onConnected(event) {
 
 function onError(error) {
     console.log(error);
-    $("#chatContainer").hide();
+    $("#chat-container").hide();
     $("#login-component").attr("hidden", false);
 }
 
@@ -31,16 +31,41 @@ function selectContact(contact) {
 }
 
 function sendMessage() {
-    var messageInput = document.getElementById("message");
+    var messageInput = document.getElementById("outgoingMessage");
     var messageContent = messageInput.value.trim();
-    if (messageContent && socket) {
+    if (messageContent) {
         let chatMessage = {
             from: username,
-            to: selectedContact + "@localhost",
+            to: "sergio" + "@localhost",
             content: messageInput.value
         };
         console.log(chatMessage);
         socket.send(JSON.stringify(chatMessage));
+
+
+        let outgoingMsg = document.createElement('div');
+        outgoingMsg.classList.add("outgoing_msg");
+
+        let sentMsg = document.createElement('div');
+        sentMsg.classList.add("sent_msg");
+
+        let msg = document.createElement('p');
+
+        let text = document.createTextNode(messageInput.value);
+
+        let timeDate = document.createElement('span');
+        timeDate.classList.add("time_date");
+
+        msg.appendChild(text);
+
+        sentMsg.appendChild(msg);
+        sentMsg.appendChild(timeDate);
+
+        outgoingMsg.appendChild(sentMsg);
+
+        let msgHistory = document.getElementById("msg_history");
+        msgHistory.appendChild(outgoingMsg);
+
         messageInput.value = "";
     }
 }
@@ -48,11 +73,10 @@ function sendMessage() {
 function onMessageReceive(event) {
     let message = JSON.parse(event.data);
     console.log(message);
-    let messageElement = document.createElement('li');
 
     if (message.messageType === 'JOIN') {
         $("#chat-container").attr("hidden", false);
-        $("#messageArea").attr("hidden", false);
+        $("#message-area").attr("hidden", false);
         console.log(message.to + ' joined!');
     } else if (message.messageType === 'ERROR') {
         $("#chat-container").attr("hidden", true);
@@ -60,16 +84,33 @@ function onMessageReceive(event) {
         username = null;
         socket = null;
     } else {
-        let usernameElement = document.createElement('span');
-        let usernameText = document.createTextNode(message.from);
-        usernameElement.appendChild(usernameText);
-        messageElement.appendChild(usernameElement);
+        let incomingMsg = document.createElement('div');
+        incomingMsg.classList.add("incoming_msg");
+
+        let receivedMsg = document.createElement('div');
+        receivedMsg.classList.add("received_msg");
+
+        let receivedWithdMsg = document.createElement('div');
+        receivedWithdMsg.classList.add("received_withd_msg");
+
+        let msg = document.createElement('p');
+
+        let text = document.createTextNode(message.content);
+
+        let timeDate = document.createElement('span');
+        timeDate.classList.add("time_date");
+
+        msg.appendChild(text);
+
+        receivedWithdMsg.appendChild(msg);
+        receivedWithdMsg.appendChild(timeDate);
+
+        receivedMsg.appendChild(receivedWithdMsg);
+
+        incomingMsg.appendChild(receivedMsg);
+
+        let msgHistory = document.getElementById("msg_history");
+        msgHistory.appendChild(incomingMsg)
     }
 
-    // var textElement = document.createElement('p');
-    // var messageText = document.createTextNode(message.content);
-    // textElement.appendChild(messageText);
-    // messageElement.appendChild(textElement);
-    // let messageArea = document.getElementById("messageArea");
-    // messageArea.appendChild(messageElement);
 }
