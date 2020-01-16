@@ -4,10 +4,10 @@ var selectedContact = null;
 
 function connect() {
     username = document.getElementById("username").value;
-    $("#login-component").attr("hidden", true);
+    $("#loginComponent").attr("hidden", true);
     if (socket === null) {
         console.log("Logging in...");
-        $("#chat-container").attr("hidden", false);
+        $("#chatContainer").attr("hidden", false);
         socket = new WebSocket("ws://localhost:8080/javaee-websocket-xmpp-client/chat/" + username);
         socket.onmessage = onMessageReceive;
         socket.onopen = onConnected;
@@ -22,8 +22,8 @@ function onConnected(event) {
 
 function onError(error) {
     console.log(error);
-    $("#chat-container").hide();
-    $("#login-component").attr("hidden", false);
+    $("#chatContainer").hide();
+    $("#loginComponent").attr("hidden", false);
 }
 
 function selectContact(contact) {
@@ -44,17 +44,17 @@ function sendMessage() {
 
 
         let outgoingMsg = document.createElement('div');
-        outgoingMsg.classList.add("outgoing_msg");
+        outgoingMsg.classList.add("outgoing-msg");
 
         let sentMsg = document.createElement('div');
-        sentMsg.classList.add("sent_msg");
+        sentMsg.classList.add("sent-msg");
 
         let msg = document.createElement('p');
 
         let text = document.createTextNode(messageInput.value);
 
         let timeDate = document.createElement('span');
-        timeDate.classList.add("time_date");
+        timeDate.classList.add("time-date");
 
         msg.appendChild(text);
 
@@ -63,7 +63,7 @@ function sendMessage() {
 
         outgoingMsg.appendChild(sentMsg);
 
-        let msgHistory = document.getElementById("msg_history");
+        let msgHistory = document.getElementById("msgHistory");
         msgHistory.appendChild(outgoingMsg);
 
         messageInput.value = "";
@@ -75,30 +75,30 @@ function onMessageReceive(event) {
     console.log(message);
 
     if (message.messageType === 'JOIN') {
-        $("#chat-container").attr("hidden", false);
-        $("#message-area").attr("hidden", false);
+        $("#chatContainer").attr("hidden", false);
+        $("#messageArea").attr("hidden", false);
         console.log(message.to + ' joined!');
     } else if (message.messageType === 'ERROR') {
-        $("#chat-container").attr("hidden", true);
-        $("#login-component").attr("hidden", false);
+        $("#chatContainer").attr("hidden", true);
+        $("#loginComponent").attr("hidden", false);
         username = null;
         socket = null;
     } else {
         let incomingMsg = document.createElement('div');
-        incomingMsg.classList.add("incoming_msg");
+        incomingMsg.classList.add("incoming-msg");
 
         let receivedMsg = document.createElement('div');
-        receivedMsg.classList.add("received_msg");
+        receivedMsg.classList.add("received-msg");
 
         let receivedWithdMsg = document.createElement('div');
-        receivedWithdMsg.classList.add("received_withd_msg");
+        receivedWithdMsg.classList.add("received-withd-msg");
 
         let msg = document.createElement('p');
 
         let text = document.createTextNode(message.content);
 
         let timeDate = document.createElement('span');
-        timeDate.classList.add("time_date");
+        timeDate.classList.add("time-date");
 
         msg.appendChild(text);
 
@@ -109,7 +109,7 @@ function onMessageReceive(event) {
 
         incomingMsg.appendChild(receivedMsg);
 
-        let msgHistory = document.getElementById("msg_history");
+        let msgHistory = document.getElementById("msgHistory");
         msgHistory.appendChild(incomingMsg)
     }
 
