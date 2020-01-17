@@ -48,31 +48,31 @@
                         </div>
                     </div>
                     <div class="inbox-chat">
-                        <div class="chat-list active-chat" id="contact1" onclick="selectContact()">
+                        <div class="chat-list active-chat" id="user1" onclick="selectContact('user1')">
                             <div class="chat-people">
                                 <div class="chat-img">
                                     <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil">
                                 </div>
                                 <div class="chat-ib">
-                                    <h5>Sergio Martin<span class="chat-date">Dec 25</span></h5>
-                                    <p>Last message</p>
+                                    <h5>User1<span class="chat-date">Dec 25</span></h5>
+                                    <p id="lastMessageUser1"></p>
                                 </div>
                             </div>
                         </div>
-                        <div class="chat-list" id="contact2">
+                        <div class="chat-list" id="user2" onclick="selectContact('user2')">
                             <div class="chat-people">
                                 <div class="chat-img">
                                     <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil">
                                 </div>
                                 <div class="chat-ib">
                                     <h5>User2<span class="chat-date">Dec 25</span></h5>
-                                    <p>Last message</p>
+                                    <p id="lastMessageUser2"></p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="mesgs">
+                <div class="mesgs" id="mesgs">
                     <div class="msg-history" id="msgHistory">
                         <!--                        <div class="outgoing-msg">-->
                         <!--                            <div class="sent-msg">-->

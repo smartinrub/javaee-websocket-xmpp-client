@@ -23,9 +23,9 @@ public class XMPPIncomingChatMessageListener implements IncomingChatMessageListe
 
     @Override
     public void newIncomingMessage(EntityBareJid from, Message message, Chat chat) {
-        log.info("New message from " + from + ": " + message.getBody());
+        log.info("New message from {} to {}: {}", message.getFrom(), message.getTo(), message.getBody());
         TextMessage textMessage = TextMessage.builder()
-                .from(from.getLocalpart().toString())
+                .from(message.getFrom().getLocalpartOrNull().toString())
                 .to(message.getTo().getLocalpartOrNull().toString())
                 .content(message.getBody())
                 .messageType(CHAT)

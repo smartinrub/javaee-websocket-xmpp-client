@@ -1,17 +1,12 @@
 package com.sergiomartinrubio.javaeewebsocketxmppclient;
 
-import lombok.Getter;
 import org.jivesoftware.smack.AbstractXMPPConnection;
 import org.jivesoftware.smack.ConnectionConfiguration;
-import org.jivesoftware.smack.SmackException;
-import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
 import org.jxmpp.jid.EntityBareJid;
 import org.jxmpp.jid.impl.JidCreate;
 import org.jxmpp.stringprep.XmppStringprepException;
-
-import java.io.IOException;
 
 public class XMPPClient {
 
@@ -29,7 +24,7 @@ public class XMPPClient {
                     .setUsernameAndPassword(entityBareJid.getLocalpart(), "password")
                     .setSecurityMode(ConnectionConfiguration.SecurityMode.disabled)
                     .setResource(entityBareJid.getResourceOrEmpty())
-//                    .setSendPresence(true)
+                    .setSendPresence(true)
                     .build();
             return new XMPPTCPConnection(config);
         } catch (XmppStringprepException e) {
@@ -37,16 +32,4 @@ public class XMPPClient {
         }
     }
 
-    public void chatWith(String jid) throws IOException, SmackException, InterruptedException, XMPPException {
-//        AbstractXMPPConnection connection = connect();
-//        connection.connect().login();
-//        ChatManager chatManager = ChatManager.getInstanceFor(connection);
-//
-//        chatManager.addIncomingListener((from, message, chat) ->
-//                System.out.println("New message from " + from + ": " + message.getBody()));
-//
-//        EntityBareJid entityBareJid = JidCreate.entityBareFrom(jid);
-//        Chat chat = chatManager.chatWith(entityBareJid);
-//        chat.send("Howdy!");
-    }
 }

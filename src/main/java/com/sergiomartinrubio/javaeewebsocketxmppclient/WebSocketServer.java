@@ -10,6 +10,7 @@ import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.chat2.Chat;
 import org.jivesoftware.smack.chat2.ChatManager;
+import org.jivesoftware.smack.packet.Presence;
 import org.jxmpp.jid.EntityBareJid;
 import org.jxmpp.jid.impl.JidCreate;
 import org.jxmpp.stringprep.XmppStringprepException;
@@ -30,7 +31,6 @@ import static com.sergiomartinrubio.javaeewebsocketxmppclient.domain.MessageType
 public class WebSocketServer {
 
     private Map<String, Session> sessions = new HashMap<>();
-    private XMPPClient xmppClient = new XMPPClient();
     private AbstractXMPPConnection connection;
     private ChatManager chatManager;
 
@@ -39,6 +39,7 @@ public class WebSocketServer {
     public void open(Session session, @PathParam("username") String username){
         log.info("Establishing connection with username {} ", username);
         sessions.put(username, session);
+        XMPPClient xmppClient = new XMPPClient();
         connection = xmppClient.connect(username + "@" + XMPPClient.XMPP_HOST);
         TextMessage textMessage;
         try  {
@@ -80,8 +81,11 @@ public class WebSocketServer {
     }
 
     @OnClose
+    @SneakyThrows
     public void close(Session session) {
         log.info("Connection closed!");
+        Presence presence = new Presence(Presence.Type.unavailable);
+        connection.sendStanza(presence);
         connection.disconnect();
 //        sessionHandler.removeSession(session);
     }

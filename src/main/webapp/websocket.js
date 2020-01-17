@@ -8,6 +8,7 @@ function connect() {
     if (socket === null) {
         console.log("Logging in...");
         $("#chatContainer").attr("hidden", false);
+        $("#mesgs").attr("hidden", true);
         socket = new WebSocket("ws://localhost:8080/javaee-websocket-xmpp-client/chat/" + username);
         socket.onmessage = onMessageReceive;
         socket.onopen = onConnected;
@@ -28,6 +29,16 @@ function onError(error) {
 
 function selectContact(contact) {
     selectedContact = contact;
+
+    let contacts = document.getElementsByClassName('chat-list');
+
+    for (var i = 0; i < contacts.length; i++) {
+        contacts[i].classList.remove('active-chat');
+    }
+
+    let contactComponent = document.getElementById(contact);
+    contactComponent.classList.add("active-chat");
+    $("#mesgs").attr("hidden", false);
 }
 
 function sendMessage() {
@@ -36,7 +47,7 @@ function sendMessage() {
     if (messageContent) {
         let chatMessage = {
             from: username,
-            to: "sergio" + "@localhost",
+            to: selectedContact + "@localhost",
             content: messageInput.value
         };
         console.log(chatMessage);
@@ -77,7 +88,7 @@ function onMessageReceive(event) {
     if (message.messageType === 'JOIN') {
         $("#chatContainer").attr("hidden", false);
         $("#messageArea").attr("hidden", false);
-        console.log(message.to + ' joined!');
+        $(username).attr("hidden", true);
     } else if (message.messageType === 'ERROR') {
         $("#chatContainer").attr("hidden", true);
         $("#loginComponent").attr("hidden", false);
@@ -97,6 +108,8 @@ function onMessageReceive(event) {
 
         let text = document.createTextNode(message.content);
 
+        document.getElementById("lastMessage" + capitalize(message.from)).textContent = message.content;
+
         let timeDate = document.createElement('span');
         timeDate.classList.add("time-date");
 
@@ -111,6 +124,11 @@ function onMessageReceive(event) {
 
         let msgHistory = document.getElementById("msgHistory");
         msgHistory.appendChild(incomingMsg)
+    }
+
+    function capitalize(string)
+    {
+        return string.charAt(0).toUpperCase() + string.slice(1);
     }
 
 }
