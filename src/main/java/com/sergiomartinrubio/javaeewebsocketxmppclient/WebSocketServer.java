@@ -5,12 +5,12 @@ import com.sergiomartinrubio.javaeewebsocketxmppclient.exception.WebSocketExcept
 import com.sergiomartinrubio.javaeewebsocketxmppclient.exception.XMPPGenericException;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.jivesoftware.smack.AbstractXMPPConnection;
 import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.chat2.Chat;
 import org.jivesoftware.smack.chat2.ChatManager;
 import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jxmpp.jid.EntityBareJid;
 import org.jxmpp.jid.impl.JidCreate;
 import org.jxmpp.stringprep.XmppStringprepException;
@@ -30,17 +30,15 @@ import static com.sergiomartinrubio.javaeewebsocketxmppclient.domain.MessageType
 @ServerEndpoint(value = "/chat/{username}", decoders = MessageDecoder.class, encoders = MessageEncoder.class)
 public class WebSocketServer {
 
-    private Map<String, Session> sessions = new HashMap<>();
-    private AbstractXMPPConnection connection;
-    private ChatManager chatManager;
+    private Map<Session, XMPPTCPConnection> connections = new HashMap<>();
 
     @SneakyThrows
     @OnOpen
     public void open(Session session, @PathParam("username") String username){
         log.info("Establishing connection with username {} ", username);
-        sessions.put(username, session);
         XMPPClient xmppClient = new XMPPClient();
-        connection = xmppClient.connect(username + "@" + XMPPClient.XMPP_HOST);
+        XMPPTCPConnection connection = xmppClient.connect(username + "@" + XMPPClient.XMPP_HOST);
+        connections.put(session, connection);
         TextMessage textMessage;
         try  {
             connection.connect().login();
@@ -60,15 +58,14 @@ public class WebSocketServer {
                     .to(username)
                     .messageType(JOIN)
                     .build();
-            sessions.get(username).getBasicRemote().sendObject(textMessage);
+            session.getBasicRemote().sendObject(textMessage);
         } catch (IOException | EncodeException e) {
             connection.disconnect();
-            sessions.remove(username);
+            connections.remove(session);
             throw new WebSocketException(e);
         }
-        chatManager = ChatManager.getInstanceFor(connection);
+        ChatManager chatManager = ChatManager.getInstanceFor(connection);
         chatManager.addIncomingListener(new XMPPIncomingChatMessageListener(session));
-        log.info("Listening to messages...");
     }
 
     @OnMessage
@@ -76,6 +73,8 @@ public class WebSocketServer {
             SmackException.NotConnectedException, InterruptedException {
         log.info(message.toString());
         EntityBareJid entityBareJid = JidCreate.entityBareFrom(message.getTo());
+        XMPPTCPConnection connection = connections.get(session);
+        ChatManager chatManager = ChatManager.getInstanceFor(connection);
         Chat chat = chatManager.chatWith(entityBareJid);
         chat.send(message.getContent());
     }
@@ -85,9 +84,9 @@ public class WebSocketServer {
     public void close(Session session) {
         log.info("Connection closed!");
         Presence presence = new Presence(Presence.Type.unavailable);
+        XMPPTCPConnection connection = connections.get(session);
         connection.sendStanza(presence);
         connection.disconnect();
-//        sessionHandler.removeSession(session);
     }
 
     @OnError

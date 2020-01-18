@@ -2,6 +2,7 @@ package com.sergiomartinrubio.javaeewebsocketxmppclient;
 
 import org.jivesoftware.smack.AbstractXMPPConnection;
 import org.jivesoftware.smack.ConnectionConfiguration;
+import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
 import org.jxmpp.jid.EntityBareJid;
@@ -13,7 +14,7 @@ public class XMPPClient {
     public static final String XMPP_HOST = "localhost";
     private static final int XMPP_PORT = 5222;
 
-    public AbstractXMPPConnection connect(String jid) {
+    public XMPPTCPConnection connect(String jid) {
         EntityBareJid entityBareJid;
         try {
             entityBareJid = JidCreate.entityBareFrom(jid);
