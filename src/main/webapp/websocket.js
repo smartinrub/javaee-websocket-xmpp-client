@@ -88,7 +88,7 @@ function onMessageReceive(event) {
     if (message.messageType === 'JOIN') {
         $("#chatContainer").attr("hidden", false);
         $("#messageArea").attr("hidden", false);
-        $(username).attr("hidden", true);
+        document.getElementById(username).hidden = true;
     } else if (message.messageType === 'ERROR') {
         $("#chatContainer").attr("hidden", true);
         $("#loginComponent").attr("hidden", false);
@@ -108,7 +108,8 @@ function onMessageReceive(event) {
 
         let text = document.createTextNode(message.content);
 
-        document.getElementById("lastMessage" + capitalize(message.from)).textContent = message.content;
+        document.getElementById("lastMessage" + capitalize(message.from)).textContent
+            = truncate(message.content, 20);
 
         let timeDate = document.createElement('span');
         timeDate.classList.add("time-date");
@@ -126,9 +127,12 @@ function onMessageReceive(event) {
         msgHistory.appendChild(incomingMsg)
     }
 
-    function capitalize(string)
-    {
+    function capitalize(string) {
         return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+
+    function truncate(source, size) {
+        return source.length > size ? source.slice(0, size - 1) + "…" : source;
     }
 
 }
